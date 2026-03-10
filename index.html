@@ -3,87 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>地牢傳說 - 介面修復版</title>
+    <title>地牢傳說</title>
     <style>
         :root { --hp: #2ecc71; --mp: #3498db; --en: #e74c3c; --bg: #0d0d0d; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; color: #fff; font-family: monospace; margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
-        /* 震動與閃紅特效 */
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 20% { transform: translate(-3px, 0px); } 40% { transform: translate(3px, 2px); } 100% { transform: translate(1px, -2px); } }
-        .shake { animation: shake 0.15s linear infinite; }
-        .flash-red { background: rgba(255, 0, 0, 0.4) !important; }
+        /* 確保畫面貼合裝置 */
+        html, body { 
+            background: #000; 
+            color: #fff; 
+            font-family: monospace; 
+            overflow: hidden; 
+            height: 100%;
+            width: 100%;
+        }
 
-        #game { width: 100vw; max-width: 500px; height: 100vh; background: var(--bg); position: relative; display: flex; flex-direction: column; overflow: hidden; }
-        .screen { position: absolute; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; background: var(--bg); z-index: 10; }
+        #game { 
+            width: 100vw; 
+            max-width: 500px; 
+            height: 100dvh; /* 動態高度，適應所有手機 */
+            background: var(--bg); 
+            position: relative; 
+            margin: 0 auto;
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .screen { 
+            position: absolute; 
+            top:0; left:0; width:100%; height:100%; 
+            display:none; flex-direction:column; 
+            background: var(--bg); 
+            z-index: 10; 
+        }
         .active { display: flex; }
 
-        /* 地圖 UI */
-        #map-ui { padding: 15px; background: #111; border-bottom: 2px solid #444; font-size: 14px; }
-        #grid-box { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #000; }
-        #grid { display: grid; grid-template-columns: repeat(15, 6vw); grid-template-rows: repeat(15, 6vw); }
-        @media (min-width: 500px) { #grid { grid-template-columns: repeat(15, 30px); grid-template-rows: repeat(15, 30px); } }
+        /* 排行榜樣式 */
+        #best-record {
+            margin-top: 10px;
+            color: #f1c40f;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* 地圖區域 */
+        #map-ui { padding: 15px; background: #111; border-bottom: 2px solid #444; }
+        #grid-box { flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        #grid { display: grid; grid-template-columns: repeat(15, 6.2vw); grid-template-rows: repeat(15, 6.2vw); }
+        @media (min-width: 500px) { #grid { grid-template-columns: repeat(15, 32px); grid-template-rows: repeat(15, 32px); } }
+
         .cell { width: 100%; height: 100%; background-size: 80%; background-repeat: no-repeat; background-position: center; image-rendering: pixelated; }
         .w { background-color: #333; } .f { background-color: #111; }
         .s { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 7h8V6H1V5h7V4H2V3h6V2H3V1h5V0H0v8h8V7z' fill='white'/%3E%3C/svg%3E"); }
         .c { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 2h6v5H1V2zm0 0h6v2H1V2zm2 2h2v1H3V4z' fill='%23f1c40f'/%3E%3C/svg%3E"); }
-        .p { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 1h2v1H3V1zm0 2h2v4H3V3zm-1 0h1v2H2V3zm3 0h1v2|' fill='%233498db'/%3E%3C/svg%3E"); transform: scale(1.5); }
+        .p { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 1h2v1H3V1zm0 2h2v4H3V3z' fill='%233498db'/%3E%3C/svg%3E"); transform: scale(1.6); }
 
-        /* 戰鬥畫面 - 徹底重排 */
-        .battle-view { flex: 0 0 45%; display: flex; flex-direction: column; align-items: center; background: #050505; border-bottom: 1px solid #333; }
+        /* 戰鬥畫面調整 */
+        .battle-view { flex: 0 0 45%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 20px; }
+        #enemy-top-bar { width: 100%; padding: 15px; background: rgba(255,0,0,0.1); text-align: center; }
         
-        /* 敵人血條區域：攻頂 */
-        #enemy-info-area { width: 100%; padding: 15px 10px; background: rgba(255,0,0,0.05); text-align: center; }
-        .en-name-label { color: #ff7675; font-weight: bold; font-size: 16px; margin-bottom: 5px; text-shadow: 1px 1px #000; }
-        
-        .enemy-container { flex-grow: 1; display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; }
-        .sprite { width: 70px; height: 70px; background-size: contain; background-repeat: no-repeat; image-rendering: pixelated; transition: 0.1s; position: relative; }
-        .sprite.selected { filter: drop-shadow(0 0 8px #fff); transform: scale(1.1); }
+        .enemy-container { flex-grow: 1; display: flex; gap: 20px; justify-content: center; align-items: center; }
+        .sprite { width: 80px; height: 80px; background-size: contain; background-repeat: no-repeat; image-rendering: pixelated; transition: 0.1s; position: relative; }
+        .sprite.selected { filter: drop-shadow(0 0 10px #fff); transform: scale(1.2); }
         .sprite.dead { opacity: 0; pointer-events: none; }
-        .en-slime { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4h6v3H1V4zm1-1h4v1H2V3z' fill='%232ecc71'/%3E%3C/svg%3E"); }
-        .en-skel { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 1h4v3H2V1zm0 4h1v2H2V5zm3 0h1v2H5V5z' fill='white'/%3E%3C/svg%3E"); }
         
-        /* 玩家血條區域：置底 */
-        .bars { padding: 10px 20px; background: #111; }
-        .bar-label { font-size: 13px; font-weight: bold; margin-bottom: 3px; display: flex; justify-content: space-between; }
-        .bar-outer { width: 100%; height: 12px; background: #222; border: 1px solid #444; margin-bottom: 10px; overflow: hidden; }
+        .bars { padding: 15px 20px; background: #0a0a0a; border-top: 1px solid #333; }
+        .bar-label { font-size: 13px; font-weight: bold; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .bar-outer { width: 100%; height: 14px; background: #222; border: 1px solid #444; margin-bottom: 12px; position: relative; }
         .bar-fill { height: 100%; width: 100%; transition: 0.3s; }
 
-        #log { flex: 1; padding: 10px; font-size: 13px; overflow-y: auto; background: #000; color: #aaa; border-top: 1px solid #222; }
-        .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; background: #000; }
-        button { background: #222; color: #fff; border: 1px solid #666; padding: 12px; cursor: pointer; font-size: 15px; font-weight: bold; }
+        #log { flex: 1; padding: 10px; font-size: 13px; overflow-y: auto; background: #000; border-top: 1px solid #222; color: #bbb; }
+        .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; background: #111; }
+        button { background: #222; color: #fff; border: 1.5px solid #666; padding: 14px; cursor: pointer; font-size: 16px; font-weight: bold; border-radius: 4px; }
         
-        #ctrls { height: 200px; background: #111; display: flex; justify-content: space-around; align-items: center; }
-        .joy { display: grid; grid-template-areas: ". u ." "l d r"; gap: 5px; }
-        .j-btn { width: 60px; height: 60px; background: #222; border: 1px solid #fff; color: #fff; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        #ctrls { height: 210px; background: #111; display: flex; justify-content: space-around; align-items: center; border-top: 2px solid #333; }
+        .joy { display: grid; grid-template-areas: ". u ." "l d r"; gap: 8px; }
+        .j-btn { width: 65px; height: 65px; background: #222; border: 2px solid #fff; color: #fff; display: flex; justify-content: center; align-items: center; font-size: 24px; border-radius: 10px; }
 
-        /* 對話框：位置修正 */
-        #msg-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: #1a1a1a; border: 2px solid #f1c40f; padding: 20px; z-index: 5000; display: none; flex-direction: column; }
-        .dmg-popup { position: absolute; font-weight: bold; font-size: 24px; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 9999; text-shadow: 2px 2px #000; }
-        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-60px); opacity: 0; } }
+        #msg-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: #1a1a1a; border: 3px solid #f1c40f; padding: 25px; z-index: 5000; display: none; flex-direction: column; box-shadow: 0 0 30px #000; }
+        
+        .dmg-popup { position: absolute; font-weight: bold; font-size: 28px; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 9999; text-shadow: 2px 2px #000; }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
+        @keyframes shake { 0% { transform: translate(2px, 2px); } 20% { transform: translate(-4px, 0px); } 100% { transform: translate(2px, -2px); } }
+        .shake { animation: shake 0.1s linear infinite; }
     </style>
 </head>
 <body>
 
 <div id="game">
     <div id="msg-box">
-        <div id="msg-content" style="text-align:center; font-size:18px; margin-bottom:15px; line-height:1.4"></div>
-        <div id="msg-btns" class="btns" style="padding:0; grid-template-columns: 1fr;"></div>
+        <div id="msg-content" style="text-align:center; font-size:18px; margin-bottom:20px; line-height:1.5"></div>
+        <div id="msg-btns" style="display:grid; gap:10px;"></div>
     </div>
 
     <div id="start-sc" class="screen active" style="justify-content:center; align-items:center;">
-        <h1 style="color:#f1c40f; font-size: 36px; margin-bottom: 30px;">地牢傳說</h1>
-        <input type="text" id="name-input" placeholder="勇者之名" style="padding:12px; width:70%; margin-bottom:20px; text-align:center;">
-        <button onclick="checkStart()" style="width:70%; background:#811; border-color:#f1c40f;">開始冒險</button>
+        <h1 style="color:#f1c40f; font-size: 42px; text-shadow: 3px 3px #811; margin-bottom: 10px;">地牢傳說</h1>
+        <div id="best-record">最高紀錄: FL.1</div>
+        <input type="text" id="name-input" placeholder="輸入你的名字" style="margin-top:30px; padding:15px; width:75%; background:#222; color:#fff; border:2px solid #fff; text-align:center; font-size:18px;">
+        <button onclick="checkStart()" style="margin-top:20px; width:75%; background:#a00; border-color:#f1c40f; font-size:22px;">踏入黑暗</button>
     </div>
 
     <div id="map-sc" class="screen">
         <div id="map-ui">
-            <div style="display:flex; justify-content:space-between">
-                <span><b><span id="ui-name">勇者</span></b> | FL: <b id="ui-fl" style="color:#f1c40f">1</b></span>
-                <span>LV: <b id="ui-lv">1</b></span>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span><b><span id="ui-name">勇者</span></b></span>
+                <span style="color:#f1c40f; font-weight:bold;">FL. <span id="ui-fl">1</span></span>
             </div>
-            <div style="margin-top:8px; font-size:12px; color:#55efc4">EXP: <span id="ui-exp">0/100</span></div>
+            <div style="margin-top:10px; display:flex; justify-content:space-between; font-size:12px;">
+                <span style="color:var(--hp)">HP: <span id="ui-hp">50/50</span></span>
+                <span>LV: <span id="ui-lv">1</span> | EXP: <span id="ui-exp">0/100</span></span>
+            </div>
         </div>
         <div id="grid-box"><div id="grid"></div></div>
         <div id="ctrls">
@@ -93,56 +122,70 @@
                 <div class="j-btn" style="grid-area: r" onclick="move(1,0)">▶</div>
                 <div class="j-btn" style="grid-area: d" onclick="move(0,1)">▼</div>
             </div>
-            <button onclick="openStatus()" style="height:80px; width:80px; border-radius:50%">能力</button>
+            <button onclick="openStatus()" style="height:100px; width:100px; border-radius:50%; border:3px solid #f1c40f;">狀態</button>
         </div>
     </div>
 
     <div id="battle-sc" class="screen">
         <div class="battle-view">
-            <div id="enemy-info-area">
-                <div id="txt-en-hp" class="en-name-label">載入中...</div>
-                <div class="bar-outer" style="width:60%; margin:0 auto; height:8px;">
-                    <div id="hp-en-f" class="bar-fill" style="background:var(--en)"></div>
-                </div>
+            <div id="enemy-top-bar">
+                <div id="txt-en-hp" style="color:#ff7675; font-weight:bold; margin-bottom:5px;">怪物 HP: --/--</div>
+                <div class="bar-outer" style="width:70%; margin:0 auto; height:10px;"><div id="hp-en-f" class="bar-fill" style="background:var(--en)"></div></div>
             </div>
-            
             <div class="enemy-container" id="enemy-sprites"></div>
             <div class="sprite p" id="player-sprite" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=\'0 0 8 8\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M3 1h2v1H3V1zm0 2h2v4H3V3z\' fill=\'%233498db\'/%3E%3C/svg%3E');"></div>
         </div>
-
         <div class="bars">
             <div class="bar-label" style="color:var(--hp)"><span>HP</span><span id="val-pl-hp">50/50</span></div>
             <div class="bar-outer"><div id="hp-pl-f" class="bar-fill" style="background:var(--hp)"></div></div>
-            
             <div class="bar-label" style="color:var(--mp)"><span>MP</span><span id="val-pl-mp">20/20</span></div>
             <div class="bar-outer"><div id="mp-pl-f" class="bar-fill" style="background:var(--mp)"></div></div>
         </div>
-
         <div id="log"></div>
         <div class="btns" id="battle-btns">
-            <button onclick="battleAction('atk')">普通攻擊</button>
-            <button onclick="toggleMenu('mag')">技能魔法</button>
-            <button onclick="toggleMenu('itm')">使用道具</button>
-            <button onclick="battleAction('run')">試圖逃跑</button>
+            <button onclick="battleAction('atk')">攻擊</button>
+            <button onclick="toggleMenu('mag')">技能</button>
+            <button onclick="toggleMenu('itm')">道具</button>
+            <button onclick="battleAction('run')">逃跑</button>
         </div>
     </div>
 </div>
 
 <script>
-    const p = { name: "勇者", lv: 1, exp: 0, nxtExp: 100, hp: 50, mHp: 50, mp: 20, mMp: 20, atk: 12, def: 5, fl: 1, x: 2, y: 2, status: "", statusTurn: 0, potions: 3, mPotions: 1, wAtk: 5, aDef: 2, wName: "木劍", aName: "布衣", skills: [{n:"斬擊", cost:0, pwr:1.3, type:"atk"}] };
-    let map = [], enemies = [], currentTarget = 0, currentMenu = "";
+    const p = { name: "勇者", lv: 1, exp: 0, nxtExp: 100, hp: 50, mHp: 50, mp: 20, mMp: 20, atk: 12, def: 5, fl: 1, x: 2, y: 2, status: "", statusTurn: 0, potions: 2, mPotions: 1, wAtk: 5, aDef: 2, wName: "木劍", aName: "布衣", skills: [{n:"全力斬", cost:5, pwr:1.8, type:"atk"}] };
+    let map = [], enemies = [], currentTarget = 0;
     const size = 15;
 
-    function checkStart() { const input = document.getElementById('name-input').value.trim(); if(!input) return alert("請輸入勇者之名"); p.name = input; document.getElementById('ui-name').innerText = p.name; startGame(); }
+    // 排行榜載入
+    function loadBest() {
+        const best = localStorage.getItem('dungeonBest') || 1;
+        document.getElementById('best-record').innerText = `最高紀錄: FL.${best}`;
+    }
+    function saveBest() {
+        const best = localStorage.getItem('dungeonBest') || 1;
+        if(p.fl > best) localStorage.setItem('dungeonBest', p.fl);
+    }
+
+    function checkStart() { 
+        const input = document.getElementById('name-input').value.trim(); 
+        if(!input) return alert("請輸入名字"); 
+        p.name = input; 
+        document.getElementById('ui-name').innerText = p.name; 
+        startGame(); 
+    }
+
     function startGame() { showScreen('map-sc'); generateMap(); }
-    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function showScreen(id) { 
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
+        document.getElementById(id).classList.add('active'); 
+    }
     
     function generateMap() {
         map = Array(size).fill().map(() => Array(size).fill('w'));
         let x=2, y=2; p.x=x; p.y=y;
-        for(let i=0; i<100; i++){ map[y][x]='f'; let d = Math.floor(Math.random()*4); if(d==0 && y>1) y--; else if(d==1 && y<size-2) y++; else if(d==2 && x>1) x--; else if(d==3 && x<size-2) x++; }
+        for(let i=0; i<110; i++){ map[y][x]='f'; let d = Math.floor(Math.random()*4); if(d==0 && y>1) y--; else if(d==1 && y<size-2) y++; else if(d==2 && x>1) x--; else if(d==3 && x<size-2) x++; }
         map[y][x]='s';
-        for(let i=0; i<4; i++){ let rx=Math.floor(Math.random()*(size-2))+1, ry=Math.floor(Math.random()*(size-2))+1; if(map[ry][rx]=='f') map[ry][rx]='c'; }
+        for(let i=0; i<5; i++){ let rx=Math.floor(Math.random()*(size-2))+1, ry=Math.floor(Math.random()*(size-2))+1; if(map[ry][rx]=='f') map[ry][rx]='c'; }
         drawMap();
     }
 
@@ -162,25 +205,25 @@
         let nx=p.x+dx, ny=p.y+dy;
         if(nx<0||nx>=size||ny<0||ny>=size||map[ny][nx]=='w') return;
         p.x=nx; p.y=ny;
-        if(map[ny][nx]=='s'){ p.fl++; customMsg(`深入地牢第 ${p.fl} 層`, () => generateMap()); }
+        if(map[ny][nx]=='s'){ p.fl++; saveBest(); customMsg(`抵達第 ${p.fl} 層`, () => generateMap()); }
         else if(map[ny][nx]=='c'){ openChest(); map[ny][nx]='f'; drawMap(); }
-        else { drawMap(); if(Math.random() < 0.18) startBattle(); }
+        else { drawMap(); if(Math.random() < 0.15) startBattle(); }
     }
 
     function openChest() {
         if(Math.random() < 0.5) {
-            let lvl = p.fl + (Math.random()>0.7?1:0);
-            let isW = Math.random() > 0.5; let n = (isW?"鐵劍":"皮甲") + " Lv." + lvl; let v = lvl * 7;
-            customChoice(`發現箱子：${n}`, [{t:"裝備", f:() => { if(isW){p.wAtk=v; p.wName=n;}else{p.aDef=v; p.aName=n;} }}, {t:"捨棄", f:()=>{}}]);
+            let lvl = p.fl + Math.floor(Math.random()*2);
+            let isW = Math.random() > 0.5; let n = (isW?"鋼劍":"鎧甲") + " Lv." + lvl; let v = lvl * 8;
+            customChoice(`發現寶箱：${n}`, [{t:"替換裝備", f:() => { if(isW){p.wAtk=v; p.wName=n;}else{p.aDef=v; p.aName=n;} }}, {t:"捨棄", f:()=>{}}]);
         } else { p.potions++; customMsg("獲得 補血藥！"); }
     }
 
     function startBattle() {
-        enemies = []; let scale = 1 + (p.fl * 0.4);
-        let count = Math.random() > 0.8 ? 2 : 1;
-        for(let i=0; i<count; i++) enemies.push({ n: "怪物"+(i+1), h: Math.floor(40*scale), mH: Math.floor(40*scale), a: Math.floor(8*scale), img: Math.random()>0.5?"en-slime":"en-skel" });
-        currentTarget = 0; document.getElementById('log').innerHTML = ""; addLog("遭遇敵人！", "#a29bfe");
-        showScreen('battle-sc'); renderEnemies(); updateBattleUI();
+        enemies = []; let scale = 1 + (p.fl * 0.45);
+        let count = Math.random() > 0.8 && p.fl > 2 ? 2 : 1;
+        for(let i=0; i<count; i++) enemies.push({ n: "怪物"+(i+1), h: Math.floor(45*scale), mH: Math.floor(45*scale), a: Math.floor(10*scale), img: Math.random()>0.5?"en-slime":"en-skel" });
+        currentTarget = 0; document.getElementById('log').innerHTML = ""; 
+        showScreen('battle-sc'); renderEnemies(); updateBattleUI(); addLog("遭遇敵人！", "#a29bfe");
     }
 
     function renderEnemies() {
@@ -194,15 +237,14 @@
     }
 
     function battleAction(type) {
-        if(p.status == "麻痺" && Math.random() < 0.4) { addLog("麻痺中無法動彈！", "#fdcb6e"); return setTimeout(enemyTurn, 600); }
         let target = enemies[currentTarget];
         if(type=='atk') {
-            let dmg = Math.floor((p.atk + p.wAtk) * (0.9 + Math.random()*0.2));
+            let dmg = Math.floor((p.atk + p.wAtk) * (0.9 + Math.random()*0.3));
             target.h = Math.max(0, target.h - dmg); showDmg(dmg, false, document.querySelectorAll('.sprite')[currentTarget]);
-            addLog(`你對 ${target.n} 造成 ${dmg} 傷害`, "#ff7675");
+            addLog(`對 ${target.n} 造成 ${dmg} 傷害`, "#ff7675");
             nextTurn();
         } else if(type=='run') {
-            if(Math.random()>0.5) { customMsg("逃跑成功！", () => showScreen('map-sc')); }
+            if(Math.random()>0.5) { customMsg("成功逃脫！", () => showScreen('map-sc')); }
             else { addLog("逃跑失敗！", "#aaa"); nextTurn(); }
         }
     }
@@ -217,66 +259,83 @@
     function enemyTurn() {
         if(p.hp <= 0) return;
         enemies.filter(e => e.h > 0).forEach(en => {
-            let dmg = Math.max(1, en.a - (p.def + p.aDef));
+            let dmg = Math.max(2, en.a - (p.def + p.aDef));
             p.hp = Math.max(0, p.hp - dmg); showDmg(dmg, false, document.getElementById('player-sprite'));
-            addLog(`${en.n} 攻擊造成 ${dmg} 傷害`, "#fab1a0");
-            if(Math.random()<0.1) { p.status="麻痺"; addLog("你陷入了麻痺！", "#fdcb6e"); }
+            addLog(`${en.n} 攻擊造成 ${dmg} 點傷`, "#fab1a0");
         });
         updateBattleUI();
-        if(p.hp <= 0) customMsg(`你戰死了...<br>最終層數：FL.${p.fl}`, () => location.reload());
+        if(p.hp <= 0) {
+            saveBest();
+            customMsg(`你倒下了...<br>最終層數：FL.${p.fl}`, () => location.reload());
+        }
     }
 
-    function win() { let exp = enemies.length * 40; p.exp += exp; customMsg(`勝利！獲得 ${exp} 經驗`, () => { if(p.exp>=p.nxtExp) levelUp(); showScreen('map-sc'); }); }
-    function levelUp() { p.lv++; p.exp-=p.nxtExp; p.nxtExp=Math.floor(p.nxtExp*1.4); p.mHp+=20; p.hp=p.mHp; p.atk+=4; customMsg(`升級！目前 LV.${p.lv}`); }
+    function win() { let exp = enemies.length * 45; p.exp += exp; customMsg(`戰鬥勝利！獲得 ${exp} EXP`, () => { if(p.exp>=p.nxtExp) levelUp(); showScreen('map-sc'); }); }
+    function levelUp() { p.lv++; p.exp-=p.nxtExp; p.nxtExp=Math.floor(p.nxtExp*1.5); p.mHp+=25; p.hp=p.mHp; p.atk+=5; customMsg(`等級提升至 LV.${p.lv}！`); }
     
     function updateUI() {
-        document.getElementById('ui-fl').innerText=p.fl; document.getElementById('ui-lv').innerText=p.lv;
+        document.getElementById('ui-fl').innerText=p.fl; 
+        document.getElementById('ui-lv').innerText=p.lv;
         document.getElementById('ui-exp').innerText=`${p.exp}/${p.nxtExp}`;
+        document.getElementById('ui-hp').innerText=`${Math.max(0,p.hp)}/${p.mHp}`;
     }
 
     function updateBattleUI() {
-        let en = enemies[currentTarget] || {h:0, mH:1, n:"無敵人"};
-        // 敵人血條與文字更新：Math.max(0, ...) 確保不會出現負數
+        let en = enemies[currentTarget] || {h:0, mH:1, n:"無"};
         document.getElementById('hp-en-f').style.width=(Math.max(0,en.h)/en.mH*100)+"%";
         document.getElementById('txt-en-hp').innerText=`${en.n} HP: ${Math.max(0,en.h)} / ${en.mH}`;
         
-        // 玩家血條與文字更新
         document.getElementById('hp-pl-f').style.width=(Math.max(0,p.hp)/p.mHp*100)+"%";
         document.getElementById('mp-pl-f').style.width=(p.mp/p.mMp*100)+"%";
-        document.getElementById('val-pl-hp').innerText=`${Math.max(0,p.hp)} / ${p.mHp} ${p.status?'['+p.status+']':''}`;
+        document.getElementById('val-pl-hp').innerText=`${Math.max(0,p.hp)} / ${p.mHp}`;
         document.getElementById('val-pl-mp').innerText=`${p.mp} / ${p.mMp}`;
+        updateUI();
     }
 
     function toggleMenu(type) {
         if(type=='mag') {
-            customChoice("選擇技能", p.skills.map(s => ({t:s.n, f:()=>{ addLog(`使用了 ${s.n}！`, "#3498db"); nextTurn(); }})));
+            customChoice("選擇技能", p.skills.map(s => ({t:`${s.n} (MP ${s.cost})`, f:()=>{ 
+                if(p.mp < s.cost) return addLog("MP 不足！", "#aaa");
+                p.mp -= s.cost; let dmg = Math.floor((p.atk+p.wAtk)*s.pwr);
+                enemies[currentTarget].h = Math.max(0, enemies[currentTarget].h - dmg);
+                showDmg(dmg, true, document.querySelectorAll('.sprite')[currentTarget]);
+                addLog(`發動 ${s.n}！造成 ${dmg} 傷害`, "#3498db"); nextTurn(); 
+            }})));
         } else if(type=='itm') {
-            customChoice("選擇道具", [{t:`補血藥 (${p.potions})`, f:()=>{ if(p.potions>0){p.potions--; p.hp=Math.min(p.mHp, p.hp+40); addLog("使用了補血藥", "#55efc4"); nextTurn();} }}]);
+            customChoice("選擇道具", [{t:`補血藥 (${p.potions})`, f:()=>{ 
+                if(p.potions>0){ p.potions--; p.hp=Math.min(p.mHp, p.hp+50); addLog("使用了補血藥", "#2ecc71"); nextTurn(); }
+            }}]);
         }
     }
 
     function customMsg(txt, cb) {
         const box = document.getElementById('msg-box'); document.getElementById('msg-content').innerHTML = txt;
-        const area = document.getElementById('msg-btns'); area.innerHTML = `<button onclick="closeMsg(true)">確定</button>`;
+        const area = document.getElementById('msg-btns'); area.innerHTML = `<button onclick="closeMsg(true)" style="background:#444; border:1px solid #fff; padding:10px;">確定</button>`;
         box.style.display='flex'; window.currentCb = cb;
     }
 
     function customChoice(txt, opts) {
         const box = document.getElementById('msg-box'); document.getElementById('msg-content').innerHTML = txt;
         const area = document.getElementById('msg-btns'); area.innerHTML = '';
-        opts.forEach(o => { const b=document.createElement('button'); b.innerText=o.t; b.onclick=()=>{box.style.display='none'; o.f();}; area.appendChild(b); });
+        opts.forEach(o => { 
+            const b=document.createElement('button'); b.innerText=o.t; 
+            b.onclick=()=>{box.style.display='none'; o.f();}; 
+            area.appendChild(b); 
+        });
         box.style.display='flex';
     }
 
     function closeMsg(use) { document.getElementById('msg-box').style.display='none'; if(use && window.currentCb) { let cb = window.currentCb; window.currentCb = null; cb(); } }
-    function openStatus() { customMsg(`<b>${p.name}</b><br>攻擊: ${p.atk+p.wAtk}<br>裝備: ${p.wName}, ${p.aName}`); }
+    function openStatus() { customMsg(`<b>${p.name}</b> LV.${p.lv}<br><br>攻擊: ${p.atk+p.wAtk}<br>防禦: ${p.def+p.aDef}<br>武器: ${p.wName}<br>防具: ${p.aName}`); }
     function addLog(m, c) { const l=document.getElementById('log'); l.innerHTML+=`<div style="color:${c}">> ${m}</div>`; l.scrollTop=l.scrollHeight; }
     function showDmg(v, crit, el) { 
-        const r = el.getBoundingClientRect(); const p = document.createElement('div'); p.className='dmg-popup'; p.innerText=v; 
-        p.style.left=(r.left+20)+'px'; p.style.top=(r.top)+'px'; p.style.color=crit?'#f1c40f':'#ff7675';
-        document.body.appendChild(p); setTimeout(()=>p.remove(), 800);
+        if(!el) return; const r = el.getBoundingClientRect(); const popup = document.createElement('div'); 
+        popup.className='dmg-popup'; popup.innerText=v; popup.style.left=(r.left+20)+'px'; popup.style.top=(r.top)+'px'; 
+        popup.style.color=crit?'#3498db':'#ff7675'; document.body.appendChild(popup); setTimeout(()=>popup.remove(), 800);
         document.getElementById('game').classList.add('shake'); setTimeout(()=>document.getElementById('game').classList.remove('shake'), 200);
     }
+
+    loadBest();
 </script>
 </body>
 </html>
