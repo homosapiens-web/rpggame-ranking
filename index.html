@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>地牢傳說 - 完整修復版</title>
+    <title>地牢傳說</title>
     <style>
         :root { --hp: #2ecc71; --mp: #3498db; --en: #e74c3c; --bg: #0d0d0d; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; color: #fff; font-family: monospace; margin: 0; padding: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; height: -webkit-fill-available; }
+        body { background: #000; color: #fff; font-family: monospace; margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
         
         @keyframes shake { 0% { transform: translate(1px, 1px); } 20% { transform: translate(-3px, 0px); } 40% { transform: translate(3px, 2px); } 60% { transform: translate(-3px, 1px); } 100% { transform: translate(1px, -2px); } }
         .shake { animation: shake 0.15s linear infinite; }
@@ -21,7 +21,7 @@
         .active { display: flex; }
 
         #map-ui { padding: 15px; background: #111; border-bottom: 2px solid #444; font-size: 14px; }
-        #grid-box { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #000; overflow: hidden; }
+        #grid-box { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #000; }
         #grid { display: grid; grid-template-columns: repeat(15, 6vw); grid-template-rows: repeat(15, 6vw); max-width: 95vw; }
         @media (min-width: 500px) { #grid { grid-template-columns: repeat(15, 30px); grid-template-rows: repeat(15, 30px); } }
 
@@ -31,8 +31,8 @@
         .c { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 2h6v5H1V2zm0 0h6v2H1V2zm2 2h2v1H3V4z' fill='%23f1c40f'/%3E%3C/svg%3E"); }
         .p { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 1h2v1H3V1zm0 2h2v4H3V3zm-1 0h1v2H2V3zm3 0h1v2H5V3z' fill='%233498db'/%3E%3Cpath d='M6 1h1v5H6V1z' fill='silver'/%3E%3C/svg%3E"); transform: scale(1.5); }
 
-        .battle-view { flex: 0 0 35%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #050505; border-bottom: 2px solid #444; position: relative; }
-        .enemy-container { display: flex; gap: 10px; justify-content: center; width: 100%; padding-top: 20px; }
+        .battle-view { flex: 0 0 40%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: #050505; border-bottom: 2px solid #444; position: relative; padding: 10px 0; }
+        .enemy-container { display: flex; gap: 10px; justify-content: center; width: 100%; }
         .sprite { width: 80px; height: 80px; background-size: contain; background-repeat: no-repeat; position: relative; image-rendering: pixelated; transition: 0.1s; }
         .sprite.selected { filter: drop-shadow(0 0 10px #fff); transform: scale(1.1); }
         .sprite.dead { opacity: 0.1; filter: grayscale(1); }
@@ -41,7 +41,7 @@
         .status-tag { position: absolute; top: -10px; width:100%; text-align:center; font-size: 12px; color: yellow; font-weight: bold; }
 
         .bars { padding: 5px 15px; }
-        .bar-outer { width: 100%; height: 20px; background: #333; border: 1.5px solid #fff; margin: 5px 0; position: relative; }
+        .bar-outer { width: 100%; height: 20px; background: #333; border: 1.5px solid #fff; margin: 4px 0; position: relative; }
         .bar-fill { height: 100%; width: 100%; transition: 0.3s; }
         .bar-txt { position: absolute; width: 100%; text-align: center; font-size: 12px; line-height: 18px; font-weight: bold; text-shadow: 1px 1px #000; z-index: 2; }
 
@@ -55,11 +55,8 @@
         .joy { display: grid; grid-template-areas: ". u ." "l d r"; gap: 8px; }
         .j-btn { width: 65px; height: 65px; background: #222; border: 2px solid #fff; color: #fff; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 24px; border-radius: 8px; }
 
-        #msg-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; background: #1a1a1a; border: 3px solid #f1c40f; padding: 20px; z-index: 3000; display: none; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        #msg-box { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 400px; background: #1a1a1a; border: 3px solid #f1c40f; padding: 20px; z-index: 3000; display: none; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         input { background: #333; color: #fff; border: 2px solid #fff; padding: 10px; width: 100%; font-size: 18px; text-align: center; margin-bottom: 10px; }
-        .rank-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .rank-table th, .rank-table td { border-bottom: 1px solid #444; padding: 8px; text-align: left; }
-        .rank-table th { color: #f1c40f; }
     </style>
 </head>
 <body>
@@ -73,8 +70,7 @@
     <div id="start-sc" class="screen active" style="justify-content:center; align-items:center;">
         <h1 style="color:#f1c40f; text-shadow: 3px 3px #811; font-size: 40px; margin-bottom: 20px;">地牢傳說</h1>
         <div style="width: 80%; margin-bottom: 20px;"><input type="text" id="name-input" placeholder="輸入你的名字" maxlength="8"></div>
-        <button onclick="checkStart()" style="font-size:24px; padding:15px 60px; margin-bottom: 10px;">踏入地牢</button>
-        <button onclick="showLeaderboard()" style="font-size:16px; padding:10px 40px; background:#444; border-color:#888;">查看排行榜</button>
+        <button onclick="checkStart()" style="font-size:24px; padding:15px 60px;">踏入地牢</button>
     </div>
 
     <div id="map-sc" class="screen">
@@ -101,9 +97,14 @@
     </div>
 
     <div id="battle-sc" class="screen">
-        <div class="battle-view"><div class="enemy-container" id="enemy-sprites"></div><div class="sprite p" id="player-sprite"></div></div>
-        <div class="bars" id="battle-bars-ui">
-            <div class="bar-outer"><div id="hp-en-f" class="bar-fill" style="background:var(--en)"></div><div class="bar-txt" id="txt-en-hp">ENEMY</div></div>
+        <div class="battle-view">
+            <div style="width: 90%; margin-top: 10px;">
+                <div class="bar-outer" style="height:15px; margin:0;"><div id="hp-en-f" class="bar-fill" style="background:var(--en)"></div><div class="bar-txt" id="txt-en-hp" style="line-height:13px; font-size:11px;">ENEMY</div></div>
+            </div>
+            <div class="enemy-container" id="enemy-sprites"></div>
+            <div class="sprite p" id="player-sprite"></div>
+        </div>
+        <div class="bars">
             <div class="bar-outer"><div class="bar-txt" id="txt-pl-hp">HP 50/50</div><div id="hp-pl-f" class="bar-fill" style="background:var(--hp)"></div></div>
             <div class="bar-outer"><div class="bar-txt" id="txt-pl-mp">MP 20/20</div><div id="mp-pl-f" class="bar-fill" style="background:var(--mp)"></div></div>
         </div>
@@ -122,79 +123,25 @@
     let map = [], enemies = [], currentTarget = 0, currentMenu = "";
     const size = 15;
 
-    function showLeaderboard() {
-        const ranks = JSON.parse(localStorage.getItem('dungeonRank') || '[]');
-        let html = '<h3>🏆 排行榜 (最高層數)</h3>';
-        if(ranks.length === 0) html += '<p>目前尚無紀錄</p>';
-        else {
-            html += '<table class="rank-table"><tr><th>排名</th><th>名字</th><th>層數</th></tr>';
-            ranks.forEach((r, i) => { html += `<tr><td>${i+1}</td><td>${r.name}</td><td>FL.${r.floor}</td></tr>`; });
-            html += '</table>';
-        }
-        customMsg(html);
-    }
-    function updateLeaderboard() {
-        let ranks = JSON.parse(localStorage.getItem('dungeonRank') || '[]');
-        ranks.push({ name: p.name, floor: p.fl });
-        ranks.sort((a, b) => b.floor - a.floor);
-        ranks = ranks.slice(0, 5);
-        localStorage.setItem('dungeonRank', JSON.stringify(ranks));
-    }
-    function checkStart() {
-        const input = document.getElementById('name-input').value.trim();
-        if(!input) return alert("請輸入名字以開始冒險！");
-        p.name = input; document.getElementById('ui-name').innerText = p.name; startGame();
-    }
-    function showDmg(val, isCrit, element, color) {
-        if(!element) return;
-        const rect = element.getBoundingClientRect();
-        const popup = document.createElement('div');
-        popup.className = 'dmg-popup'; popup.innerText = val + (isCrit ? "!!" : "");
-        popup.style.color = color || (isCrit ? "#f1c40f" : "#ff7675");
-        popup.style.left = (rect.left + rect.width/2 - 10) + "px"; popup.style.top = (rect.top - 20) + "px";
-        document.getElementById('game').appendChild(popup);
-        setTimeout(() => popup.remove(), 800);
-    }
-    function triggerImpact(isHeavy) {
-        const game = document.getElementById('game'); game.classList.add('shake');
-        if(isHeavy) game.classList.add('flash-red');
-        setTimeout(() => { game.classList.remove('shake', 'flash-red'); }, isHeavy ? 200 : 100);
-    }
+    function checkStart() { const input = document.getElementById('name-input').value.trim(); if(!input) return alert("請輸入名字！"); p.name = input; document.getElementById('ui-name').innerText = p.name; startGame(); }
     function startGame() { showScreen('map-sc'); generateMap(); }
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(id === 'battle-sc') document.getElementById('battle-btns').style.visibility = 'visible';
-    }
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id === 'battle-sc') document.getElementById('battle-btns').style.visibility = 'visible'; }
     function generateMap() {
         map = Array(size).fill().map(() => Array(size).fill('w'));
         let x=2, y=2; p.x=x; p.y=y;
-        for(let i=0; i<120; i++){
-            map[y][x]='f'; let d = Math.floor(Math.random()*4);
-            if(d==0 && y>1) y--; else if(d==1 && y<size-2) y++; else if(d==2 && x>1) x--; else if(d==3 && x<size-2) x++;
-        }
+        for(let i=0; i<120; i++){ map[y][x]='f'; let d = Math.floor(Math.random()*4); if(d==0 && y>1) y--; else if(d==1 && y<size-2) y++; else if(d==2 && x>1) x--; else if(d==3 && x<size-2) x++; }
         map[y][x]='s';
-        for(let i=0; i<5; i++){
-            let rx=Math.floor(Math.random()*(size-2))+1, ry=Math.floor(Math.random()*(size-2))+1;
-            if(map[ry][rx]=='f') map[ry][rx]='c';
-        }
+        for(let i=0; i<5; i++){ let rx=Math.floor(Math.random()*(size-2))+1, ry=Math.floor(Math.random()*(size-2))+1; if(map[ry][rx]=='f') map[ry][rx]='c'; }
         drawMap();
     }
     function drawMap() {
         const grid = document.getElementById('grid'); grid.innerHTML = '';
-        for(let y=0; y<size; y++){
-            for(let x=0; x<size; x++){
-                const c = document.createElement('div'); c.className = `cell ${map[y][x]}`;
-                if(x==p.x && y==p.y) { const pl = document.createElement('div'); pl.className='p cell'; c.appendChild(pl); }
-                grid.appendChild(c);
-            }
-        }
+        for(let y=0; y<size; y++){ for(let x=0; x<size; x++){ const c = document.createElement('div'); c.className = `cell ${map[y][x]}`; if(x==p.x && y==p.y) { const pl = document.createElement('div'); pl.className='p cell'; c.appendChild(pl); } grid.appendChild(c); } }
         updateUI();
     }
     function move(dx, dy) {
         if(!document.getElementById('map-sc').classList.contains('active')) return;
-        let nx=p.x+dx, ny=p.y+dy;
-        if(nx<0||nx>=size||ny<0||ny>=size||map[ny][nx]=='w') return;
+        let nx=p.x+dx, ny=p.y+dy; if(nx<0||nx>=size||ny<0||ny>=size||map[ny][nx]=='w') return;
         p.x=nx; p.y=ny;
         if(map[ny][nx]=='s'){ p.fl++; customMsg(`進入第 ${p.fl} 層`, () => generateMap()); }
         else if(map[ny][nx]=='c'){ openChest(); map[ny][nx]='f'; drawMap(); }
@@ -204,21 +151,13 @@
         if(Math.random() < 0.5) {
             let lvl = Math.max(1, p.fl + (Math.random()>0.5?1:0));
             let isW = Math.random() > 0.5; let n = (isW?"長劍":"護甲") + " Lv." + lvl; let v = lvl * 6;
-            customChoice(`發現：${n} (+${v})`, [
-                {t:"換上", f:() => { if(isW){p.wAtk=v; p.wName=n;}else{p.aDef=v; p.aName=n;} updateUI(); }},
-                {t:"丟棄", f:() => {}}
-            ]);
-        } else {
-            let item = Math.random() > 0.5 ? "補血藥" : "補魔藥";
-            if(item=="補血藥") p.potions++; else p.mPotions++;
-            customMsg(`獲得 ${item}！`);
-        }
+            customChoice(`發現：${n} (+${v})`, [{t:"換上", f:() => { if(isW){p.wAtk=v; p.wName=n;}else{p.aDef=v; p.aName=n;} updateUI(); }}, {t:"丟棄", f:() => {}}]);
+        } else { let item = Math.random() > 0.5 ? "補血藥" : "補魔藥"; if(item=="補血藥") p.potions++; else p.mPotions++; customMsg(`獲得 ${item}！`); }
     }
     function startBattle() {
         enemies = []; let count = Math.min(3, 1 + Math.floor(p.fl / 4)), scale = 1 + (p.fl * 0.5);
         for(let i=0; i<count; i++) enemies.push({ n: (p.fl%5==0?"精英":"")+"怪物 "+(i+1), h: Math.floor(40*scale), mH: Math.floor(40*scale), a: Math.floor(10*scale), img: Math.random()>0.5?"en-slime":"en-skel", st: "", stT: 0 });
-        currentTarget = 0; document.getElementById('log').innerHTML = ""; addLog("遭遇敵人！", "l-sys");
-        showScreen('battle-sc'); renderEnemies(); updateBattleUI();
+        currentTarget = 0; document.getElementById('log').innerHTML = ""; addLog("遭遇敵人！", "l-sys"); showScreen('battle-sc'); renderEnemies(); updateBattleUI();
     }
     function renderEnemies() {
         const box = document.getElementById('enemy-sprites'); box.innerHTML = '';
@@ -237,21 +176,13 @@
             customChoice("魔法", p.skills.map(s => ({t:`${s.n}(${s.cost}MP)`, f:() => {
                 if(p.mp < s.cost) return addLog("MP不足！", "l-sys");
                 p.mp -= s.cost; let target = enemies[currentTarget], targetEl = document.querySelectorAll('.sprite')[currentTarget];
-                if(s.type=="atk") {
-                    let dmg = Math.floor((p.atk+p.wAtk)*s.pwr); target.h = Math.max(0, target.h - dmg);
-                    showDmg(dmg, true, targetEl, "#3498db"); triggerImpact(true); addLog(`${s.n}！造成 ${dmg} 傷害`, "l-dmg");
-                } else if(s.type=="heal") {
-                    let heal = Math.floor(p.mHp * 0.4); p.hp = Math.min(p.mHp, p.hp + heal);
-                    showDmg(heal, false, document.getElementById('player-sprite'), "#2ecc71"); addLog(`恢復了 ${heal} HP`, "l-heal");
-                } else if(s.type=="cleanse") { p.status=""; p.statusTurn=0; addLog("狀態解除", "l-heal"); }
+                if(s.type=="atk") { let dmg = Math.floor((p.atk+p.wAtk)*s.pwr); target.h = Math.max(0, target.h - dmg); showDmg(dmg, true, targetEl, "#3498db"); triggerImpact(true); addLog(`${s.n}！造成 ${dmg} 傷害`, "l-dmg"); }
+                else if(s.type=="heal") { let heal = Math.floor(p.mHp * 0.4); p.hp = Math.min(p.mHp, p.hp + heal); showDmg(heal, false, document.getElementById('player-sprite'), "#2ecc71"); addLog(`恢復了 ${heal} HP`, "l-heal"); }
+                else if(s.type=="cleanse") { p.status=""; p.statusTurn=0; addLog("狀態解除", "l-heal"); }
                 nextTurn();
             }})));
         } else if(type === 'itm') {
-            customChoice("道具", [
-                {t:`補血藥(${p.potions})`, f:() => { if(p.potions>0){p.potions--; p.hp=Math.min(p.mHp, p.hp+50); showDmg(50,false,document.getElementById('player-sprite'),"#2ecc71"); addLog("使用補血藥", "l-heal"); nextTurn();} }},
-                {t:`補魔藥(${p.mPotions})`, f:() => { if(p.mPotions>0){p.mPotions--; p.mp=Math.min(p.mMp, p.mp+30); addLog("使用補魔藥", "l-sys"); nextTurn();} }},
-                {t:`解毒劑(${p.antidotes})`, f:() => { if(p.antidotes>0){p.antidotes--; p.status=""; addLog("解毒完成", "l-heal"); nextTurn();} }}
-            ]);
+            customChoice("道具", [{t:`補血藥(${p.potions})`, f:() => { if(p.potions>0){p.potions--; p.hp=Math.min(p.mHp, p.hp+50); showDmg(50,false,document.getElementById('player-sprite'),"#2ecc71"); addLog("使用補血藥", "l-heal"); nextTurn();} }}, {t:`補魔藥(${p.mPotions})`, f:() => { if(p.mPotions>0){p.mPotions--; p.mp=Math.min(p.mMp, p.mp+30); addLog("使用補魔藥", "l-sys"); nextTurn();} }}, {t:`解毒劑(${p.antidotes})`, f:() => { if(p.antidotes>0){p.antidotes--; p.status=""; addLog("解毒完成", "l-heal"); nextTurn();} }}]);
         }
     }
     function battleAction(type) {
@@ -267,61 +198,37 @@
     function nextTurn() {
         updateBattleUI(); renderEnemies();
         if(enemies.every(e => e.h <= 0)) { document.getElementById('battle-btns').style.visibility = 'hidden'; setTimeout(win, 400); }
-        else {
-            if(enemies[currentTarget].h <= 0) { let next = enemies.findIndex(e => e.h > 0); if(next !== -1) currentTarget = next; }
-            setTimeout(enemyTurn, 600);
-        }
+        else { if(enemies[currentTarget].h <= 0) { let next = enemies.findIndex(e => e.h > 0); if(next !== -1) currentTarget = next; } setTimeout(enemyTurn, 600); }
     }
     function enemyTurn() {
         if(enemies.every(e => e.h <= 0) || p.hp <= 0) return;
         if(p.status=="中毒"){ p.hp = Math.max(0, p.hp - 5); addLog("中毒失血 5 點...", "l-dmg"); p.statusTurn--; if(p.statusTurn<=0) p.status=""; }
         let aliveEnemies = enemies.filter(e => e.h > 0);
-        aliveEnemies.forEach(en => {
-            if(p.hp <= 0) return; let dmg = Math.max(3, en.a - (p.def+p.aDef) + Math.floor(Math.random()*4));
-            p.hp = Math.max(0, p.hp - dmg); showDmg(dmg, false, document.getElementById('player-sprite'));
-            addLog(`${en.n} 攻擊造成 ${dmg} 傷害`, "l-dmg"); triggerImpact(false);
-            if(Math.random()<0.15 && !p.status) { p.status=Math.random()>0.5?"中毒":"麻痺"; p.statusTurn=3; addLog(`陷入 ${p.status}！`, "l-sys"); }
-        });
+        aliveEnemies.forEach(en => { if(p.hp <= 0) return; let dmg = Math.max(3, en.a - (p.def+p.aDef) + Math.floor(Math.random()*4)); p.hp = Math.max(0, p.hp - dmg); showDmg(dmg, false, document.getElementById('player-sprite')); addLog(`${en.n} 攻擊造成 ${dmg} 傷害`, "l-dmg"); triggerImpact(false); if(Math.random()<0.15 && !p.status) { p.status=Math.random()>0.5?"中毒":"麻痺"; p.statusTurn=3; addLog(`陷入 ${p.status}！`, "l-sys"); } });
         updateBattleUI();
-        if(p.hp <= 0) {
-            document.getElementById('battle-btns').style.visibility = 'hidden'; updateLeaderboard();
-            setTimeout(() => customMsg(`你敗北了...<br>最終層數: FL.${p.fl}`, () => location.reload()), 500);
-        }
+        if(p.hp <= 0) { document.getElementById('battle-btns').style.visibility = 'hidden'; setTimeout(() => customMsg(`你敗北了...<br>最終層數: FL.${p.fl}`, () => location.reload()), 500); }
     }
     function win() { let exp = enemies.length * (30 + p.fl*12); p.exp += exp; customMsg(`勝利！獲得 ${exp} 經驗`, () => { if(p.exp>=p.nxtExp) levelUp(); showScreen('map-sc'); }); }
     function levelUp() {
         p.lv++; p.exp-=p.nxtExp; p.nxtExp=Math.floor(p.nxtExp*1.4); p.mHp+=20; p.hp=p.mHp; p.mMp+=10; p.mp=p.mMp; p.atk+=4;
-        if(p.lv==2) p.skills.push({n:"烈火咒", cost:12, pwr:3, type:"atk"});
-        if(p.lv==3) p.skills.push({n:"淨化術", cost:8, type:"cleanse"});
-        if(p.lv==5) p.skills.push({n:"聖光術", cost:15, type:"heal"});
+        if(p.lv==2) p.skills.push({n:"烈火咒", cost:12, pwr:3, type:"atk"}); if(p.lv==3) p.skills.push({n:"淨化術", cost:8, type:"cleanse"}); if(p.lv==5) p.skills.push({n:"聖光術", cost:15, type:"heal"});
         customMsg(`升級至 LV.${p.lv}！`);
     }
     function addLog(m, cls) { const l=document.getElementById('log'); l.innerHTML+=`<div class="${cls}">> ${m}</div>`; l.scrollTop=l.scrollHeight; }
-    function updateUI() {
-        document.getElementById('ui-fl').innerText=p.fl; document.getElementById('ui-lv').innerText=p.lv; document.getElementById('ui-exp').innerText=`${p.exp}/${p.nxtExp}`;
-        document.getElementById('ui-hp').innerText=`${Math.max(0,p.hp)}/${p.mHp}`; document.getElementById('ui-mp').innerText=`${p.mp}/${p.mMp}`;
-    }
+    function updateUI() { document.getElementById('ui-fl').innerText=p.fl; document.getElementById('ui-lv').innerText=p.lv; document.getElementById('ui-exp').innerText=`${p.exp}/${p.nxtExp}`; document.getElementById('ui-hp').innerText=`${Math.max(0,p.hp)}/${p.mHp}`; document.getElementById('ui-mp').innerText=`${p.mp}/${p.mMp}`; }
     function updateBattleUI() {
         let en = enemies[currentTarget] || {h:0, mH:1, n:"無"};
         document.getElementById('hp-en-f').style.width=(Math.max(0,en.h)/en.mH*100)+"%"; document.getElementById('txt-en-hp').innerText=`${en.n} HP: ${Math.max(0,en.h)}/${en.mH}`;
         document.getElementById('hp-pl-f').style.width=(Math.max(0,p.hp)/p.mHp*100)+"%"; document.getElementById('mp-pl-f').style.width=(p.mp/p.mMp*100)+"%";
-        document.getElementById('txt-pl-hp').innerText=`HP ${Math.max(0,p.hp)}/${p.mHp} ${p.status?'['+p.status+']':''}`; document.getElementById('txt-pl-mp').innerText=`MP ${p.mp}/${p.mMp}`; updateUI();
+        document.getElementById('txt-pl-hp').innerText=`HP ${Math.max(0,p.hp)}/${p.mHp} ${p.status?'['+p.status+']':''}`;
+        updateUI();
     }
-    function customMsg(txt, cb) {
-        document.getElementById('battle-bars-ui').style.opacity = "0"; const box = document.getElementById('msg-box'); document.getElementById('msg-content').innerHTML = txt;
-        const area = document.getElementById('msg-btns'); area.innerHTML = `<button onclick="closeMsg(true)" style="width:100%">確定</button>`; box.style.display='flex'; window.currentCb = cb;
-    }
-    function customChoice(txt, opts) {
-        document.getElementById('battle-bars-ui').style.opacity = "0"; const box = document.getElementById('msg-box'); document.getElementById('msg-content').innerHTML = txt;
-        const area = document.getElementById('msg-btns'); area.innerHTML = '';
-        opts.forEach(o => { const b=document.createElement('button'); b.innerText=o.t; b.onclick=()=>{box.style.display='none'; currentMenu=""; o.f();}; area.appendChild(b); });
-        box.style.display='flex';
-    }
-    function closeMsg(use) {
-        document.getElementById('msg-box').style.display='none'; document.getElementById('battle-bars-ui').style.opacity = "1";
-        currentMenu = ""; if(use && window.currentCb) { let cb = window.currentCb; window.currentCb = null; cb(); }
-    }
-    function openStatus() { customChoice(`<b>${p.name}</b> LV.${p.lv}<br>攻擊: ${p.atk+p.wAtk} | 防禦: ${p.def+p.aDef}<br>裝備: ${p.wName}, ${p.aName}`, [{t:"排行榜", f: showLeaderboard }, {t:"關閉", f: ()=>{}}]); }
+    function customMsg(txt, cb) { const box = document.getElementById('msg-box'); document.getElementById('msg-content').innerHTML = txt; const area = document.getElementById('msg-btns'); area.innerHTML = `<button onclick="closeMsg(true)" style="width:100%">確定</button>`; box.style.display='flex'; window.currentCb = cb; }
+    function customChoice(txt, opts) { const box = document.getElementById('msg-box'); document.getElementById('msg-content').innerHTML = txt; const area = document.getElementById('msg-btns'); area.innerHTML = ''; opts.forEach(o => { const b=document.createElement('button'); b.innerText=o.t; b.onclick=()=>{box.style.display='none'; currentMenu=""; o.f();}; area.appendChild(b); }); box.style.display='flex'; }
+    function closeMsg(use) { document.getElementById('msg-box').style.display='none'; currentMenu = ""; if(use && window.currentCb) { let cb = window.currentCb; window.currentCb = null; cb(); } }
+    function openStatus() { customChoice(`<b>${p.name}</b> LV.${p.lv}<br>攻擊: ${p.atk+p.wAtk} | 防禦: ${p.def+p.aDef}<br>裝備: ${p.wName}, ${p.aName}`, [{t:"關閉", f: ()=>{}}]); }
+    function showDmg(val, isCrit, element, color) { if(!element) return; const rect = element.getBoundingClientRect(); const popup = document.createElement('div'); popup.className = 'dmg-popup'; popup.innerText = val + (isCrit ? "!!" : ""); popup.style.color = color || (isCrit ? "#f1c40f" : "#ff7675"); popup.style.left = (rect.left + rect.width/2 - 10) + "px"; popup.style.top = (rect.top - 20) + "px"; document.getElementById('game').appendChild(popup); setTimeout(() => popup.remove(), 800); }
+    function triggerImpact(isHeavy) { const game = document.getElementById('game'); game.classList.add('shake'); if(isHeavy) game.classList.add('flash-red'); setTimeout(() => { game.classList.remove('shake', 'flash-red'); }, isHeavy ? 200 : 100); }
 </script>
 </body>
 </html>
